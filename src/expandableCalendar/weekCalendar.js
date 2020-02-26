@@ -41,12 +41,11 @@ class WeekCalendar extends Component {
     super(props);
 
     this.style = styleConstructor(props.theme);
-
     this.list = React.createRef();
     this.page = NUMBER_OF_PAGES;
 
     this.state = {
-      items: this.getDatesArray()
+      items: this.getDatesArray(),
     };
   }
 
@@ -197,11 +196,10 @@ class WeekCalendar extends Component {
               <Text 
                 allowFontScaling={false} 
                 key={idx} 
+                accessible={false} 
                 style={this.style.dayHeader} 
                 numberOfLines={1} 
-                accessibilityLabel={''}
-                // accessible={false} // not working
-                // importantForAccessibility='no'
+                importantForAccessibility='no'
               >
                 {day}
               </Text>

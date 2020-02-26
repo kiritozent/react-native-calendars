@@ -1,5 +1,9 @@
 import React, {Component} from 'react';
-import {FlatList, ActivityIndicator, View} from 'react-native';
+import {
+  FlatList,
+  ActivityIndicator,
+  View
+} from 'react-native';
 import Reservation from './reservation';
 import PropTypes from 'prop-types';
 import XDate from 'xdate';
@@ -7,8 +11,7 @@ import XDate from 'xdate';
 import dateutils from '../../dateutils';
 import styleConstructor from './style';
 
-
-class ReservationList extends Component {
+class ReactComp extends Component {
   static displayName = 'IGNORE';
   
   static propTypes = {
@@ -28,32 +31,26 @@ class ReservationList extends Component {
     // the value of date key kas to be an empty array []. If there exists no value for date key it is
     // considered that the date in question is not yet loaded
     reservations: PropTypes.object,
+
     selectedDay: PropTypes.instanceOf(XDate),
     topDay: PropTypes.instanceOf(XDate),
     refreshControl: PropTypes.element,
     refreshing: PropTypes.bool,
     onRefresh: PropTypes.func,
-    onScrollBeginDrag: PropTypes.func,
-    onScrollEndDrag: PropTypes.func,
-    onMomentumScrollBegin: PropTypes.func,
-    onMomentumScrollEnd: PropTypes.func
   };
 
   constructor(props) {
     super(props);
-    
     this.styles = styleConstructor(props.theme);
-    
     this.state = {
       reservations: []
     };
-    
     this.heights=[];
     this.selectedDay = this.props.selectedDay;
     this.scrollOver = true;
   }
 
-  UNSAFE_componentWillMount() {
+  componentWillMount() {
     this.updateDataSource(this.getReservations(this.props).reservations);
   }
 
@@ -77,7 +74,7 @@ class ReservationList extends Component {
     this.updateDataSource(reservations.reservations);
   }
 
-  UNSAFE_componentWillReceiveProps(props) {
+  componentWillReceiveProps(props) {
     if (!dateutils.sameDate(props.topDay, this.props.topDay)) {
       this.setState({
         reservations: []
@@ -102,7 +99,7 @@ class ReservationList extends Component {
     }
     const row = this.state.reservations[topRow];
     if (!row) return;
-    const day = row.day;
+    const day = XDate(row.day[0]);
     const sameDate = dateutils.sameDate(day, this.selectedDay);
     if (!sameDate && this.scrollOver) {
       this.selectedDay = day.clone();
@@ -134,17 +131,19 @@ class ReservationList extends Component {
     const res = props.reservations[day.toString('yyyy-MM-dd')];
     if (res && res.length) {
       return res.map((reservation, i) => {
-        return {
+        const temp = {
           reservation,
           date: i ? false : day,
-          day
-        };
+          day: XDate(iterator)
+        }; 
+        return temp;
       });
     } else if (res) {
-      return [{
+      const temp = [{
         date: iterator.clone(),
-        day
+        day: XDate(iterator)
       }];
+      return temp;
     } else {
       return false;
     }
@@ -160,7 +159,8 @@ class ReservationList extends Component {
     }
     let reservations = [];
     if (this.state.reservations && this.state.reservations.length) {
-      const iterator = this.state.reservations[0].day.clone();
+      const temp = XDate(this.state.reservations[0].day[0]);
+      const iterator = temp.clone();
       while (iterator.getTime() < props.selectedDay.getTime()) {
         const res = this.getReservationsForDay(iterator, props);
         if (!res) {
@@ -191,7 +191,7 @@ class ReservationList extends Component {
         return this.props.renderEmptyData();
       }
       return (
-        <ActivityIndicator style={{marginTop: 80}} color={this.props.theme && this.props.theme.indicatorColor}/>
+        <ActivityIndicator style={{marginTop: 80}} color={this.props.theme && this.props.theme.indicatorColor} />
       );
     }
     return (
@@ -203,19 +203,16 @@ class ReservationList extends Component {
         data={this.state.reservations}
         onScroll={this.onScroll.bind(this)}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={5}
         scrollEventThrottle={200}
         onMoveShouldSetResponderCapture={() => {this.onListTouch(); return false;}}
         keyExtractor={(item, index) => String(index)}
         refreshControl={this.props.refreshControl}
         refreshing={this.props.refreshing || false}
         onRefresh={this.props.onRefresh}
-        onScrollBeginDrag={this.props.onScrollBeginDrag}
-        onScrollEndDrag={this.props.onScrollEndDrag}
-        onMomentumScrollBegin={this.props.onMomentumScrollBegin}
-        onMomentumScrollEnd={this.props.onMomentumScrollEnd}
       />
     );
   }
 }
 
-export default ReservationList;
+export default ReactComp;
